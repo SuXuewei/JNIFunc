@@ -11,7 +11,7 @@ import android.widget.ListView;
 
 public class MainActivity extends AppCompatActivity {
 
-    private String[] funcNames = {"NDK String", "TODO"};
+    private String[] funcNames = {"NDK String", "Serial Port", "TODO"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

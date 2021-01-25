@@ -11,6 +11,7 @@ public class StringUtil {
 
     static {
         System.loadLibrary("StringUtil");
+        System.loadLibrary("SerialPort");
     }
 
     public StringUtil(){};
@@ -18,4 +19,8 @@ public class StringUtil {
     private static final String TAG = StringUtil.class.getSimpleName();
 
     public native String getOutString(String strInput);
+
+    public native String getStringFromCpp(String strInput);
+
+    public native String testSerialPort();
 }

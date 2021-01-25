@@ -44,6 +44,8 @@ public class NDKStringActivity extends AppCompatActivity {
                 String strInput = etJavaString.getText().toString();
                 //String strOutput = "output STRING";
                 String strOutput = stringUtil.getOutString(strInput);
+                strOutput += "\n" + stringUtil.getStringFromCpp(strInput);
+                stringUtil.testSerialPort();
                 String strTestInfo = buildTestInfo(strInput, strOutput);
                 String info = tvTestInfo.getText().toString();
                 info += strTestInfo;
@@ -58,12 +60,12 @@ public class NDKStringActivity extends AppCompatActivity {
             }
         });
     }
-    
+
     String buildTestInfo(String strInput, String strOutput)
     {
         String strTestInfo;
         strTestInfo = "Input String：" + strInput + "\n" +
-                      "Output String: " + strOutput + "\n";
+                      "Output String: \n" + strOutput + "\n";
         return strTestInfo;
     }
 }
