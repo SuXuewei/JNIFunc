@@ -3,7 +3,22 @@
 //
 
 #include "SerialPortUtil.h"
+#include "LogUtil.h"
+#include "ErrorCode.h"
 #include <string.h>
+
+//const char* 指针本身数值不能变 const SerialPortUtil::TAG指向的字符不可以改变
+const char* const SerialPortUtil::TAG = "SerialPortUtil";
+
+SerialPortUtil::SerialPortUtil() {
+    mfd = -1;
+}
+
+SerialPortUtil::~SerialPortUtil() {
+    if(isValued()) {
+        close();
+    }
+}
 
 /************************************************************************
  * speed_t getBaudrate(int baudrate)
@@ -48,18 +63,28 @@ speed_t SerialPortUtil::getBaudrate(int baudrate) {
     }
 }
 
-int SerialPortUtil::open(char *pcDevName) {
-    int mfd = ::open(pcDevName, O_RDWR);
+//打开串口
+bool SerialPortUtil::open(char *pcDevName) {
+    mfd = ::open(pcDevName, O_RDWR);
+    LOGI(TAG, "open mfd=%d", mfd);
     if(-1 == mfd)
     {
         perror("open serial port fail!");
+        return false;
     }
-    return mfd;
+
+    return true;
 }
 
+//关闭串口
 void SerialPortUtil::close() {
     ::close(mfd);
     mfd = -1;
+}
+
+//当前实体对象是否有效
+bool SerialPortUtil::isValued() {
+    return (mfd == -1) ? false : true;
 }
 
 /************************************************************************
@@ -101,70 +126,67 @@ void SerialPortUtil::setSpeed(int speed) {
  * int parity - 设置校验类型, {N,E,O,S}
  * int - success:0 fail:-1
 ************************************************************************/
-int SerialPortUtil::setParity(int numOfDataBits, int numOfStopBits, int parity) {
+bool SerialPortUtil::setParity(int numOfDataBits, int numOfStopBits, int parity) {
     struct termios options;
+
     if(tcgetattr(mfd, &options) != 0)
     {
         perror("setParity tcgetattr fail!");
-        return -1;
+        return false;
     }
 
     //设置数据位数,实际数据占几位
     options.c_cflag &= ~CSIZE;
     switch (numOfDataBits) {
-        case 7:
+        case DATA_BITS_7:
             options.c_cflag |= CS7;
             break;
-        case 8:
+        case DATA_BITS_8:
             options.c_cflag |= CS8;
             break;
         default:
             fprintf(stderr, "Unsupport data bits size\n");
-            return -1;
+            return false;
     }
 
     //设置停止位数,实际数据占几位
     switch (numOfStopBits) {
-        case 1:
+        case STOP_BITS_1:
             options.c_cflag &= ~CSTOPB;
             break;
-        case 2:
+        case STOP_BITS_2:
             options.c_cflag |= CSTOPB;
             break;
         default:
             fprintf(stderr, "Unsupport stop bits size\n");
-            return -1;
+            return false;
     }
 
     //设置校验类型
     switch (parity) {
-        case 'n':
-        case 'N':
+        case PARITY_N:
             options.c_cflag &= ~PARENB; //clear parity enable
             options.c_cflag &= ~INPCK;  //enable parity checking
             break;
-        case 'o':
-        case 'O':
+        case PARITY_O:
             options.c_cflag |= (PARODD | PARENB); //设置奇校验
             options.c_cflag |= INPCK;  //disable parity checking
-        case 'e':
-        case 'E':
+        case PARITY_E:
             options.c_cflag |= PARENB; //enable parity
             options.c_cflag &= ~PARODD; //转换为偶校验
             options.c_cflag |= INPCK;  //disable parity checking
-        case 's':
-        case 'S':
+        case PARITY_S:
             //as no parity
             options.c_cflag &= ~PARENB;
             options.c_cflag &= ~CSTOPB;
             break;
         default:
             fprintf(stderr, "Unsupport parity!");
-            return -1;
+            return false;
     }
 
     //set input parity
-    if((parity != 'n') && (parity != 'N')) {
+    if(parity != PARITY_N) {
         options.c_iflag |= INPCK;
     }
     tcflush(mfd, TCIFLUSH);
@@ -173,10 +195,10 @@ int SerialPortUtil::setParity(int numOfDataBits, int numOfStopBits, int parity) 
     if(tcsetattr(mfd, TCSANOW, &options) != 0)
     {
         perror("Setup Serial fail at last!");
-        return -1;
+        return false;
     }
 
-    return 0;
+    return true;
 }
 
 int SerialPortUtil::write(char *pcSendBytes, int nSendLen) {
@@ -189,7 +211,6 @@ int SerialPortUtil::read(char *pcReadBytes, int nMaxLen) {
 
 //测试函数
 void SerialPortUtil::mainTest() {
-    int fd;
     int nReadBytes;
     int nSendBytes;
     char sendBytes[256];
@@ -197,22 +218,28 @@ void SerialPortUtil::mainTest() {
     char *pcDeviceName = "/dev/ttyGS0";
     SerialPortUtil serialPortUtil;
 
+    LOGI(TAG, "mainTest deviceName=%s", pcDeviceName);
     serialPortUtil.open(pcDeviceName);
+    if(!serialPortUtil.isValued()) {
+        LOGI(TAG, "isValued return false!");
+        return;
+    }
     serialPortUtil.setSpeed(9600);
     serialPortUtil.setParity(SerialPortUtil::DATA_BITS_8,
             SerialPortUtil::STOP_BITS_1, SerialPortUtil::PARITY_N);
     strcpy(sendBytes, "JNI send serial data");
-    nSendBytes = serialPortUtil.write(sendBytes, strlen(sendBytes));
+    serialPortUtil.write(sendBytes, strlen(sendBytes));
     while (1)
     {
         while((nReadBytes = serialPortUtil.read(readBytes, sizeof(readBytes))) > 0)
         {
-            printf("\nreand len = %d\n", nReadBytes);
+            LOGI(TAG, "\nreand len = %d\n", nReadBytes);
             readBytes[nReadBytes] = 0;
-            printf("read buff: %s", readBytes);
-            if(strcmp(readBytes, "OK") == 0) {
+            LOGI(TAG, "read buff: %s", readBytes);
+            //if(strcmp(readBytes, "OK") == 0) {
+            if(strcmp(readBytes, "\x4f\x4B") == 0) {
+                LOGI(TAG, "call serialPortUtil.close!");
                 serialPortUtil.close();
-                fd = -1;
                 return;
             }
         }

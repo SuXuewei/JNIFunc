@@ -17,18 +17,22 @@
 class SerialPortUtil {
 
 public:
+    SerialPortUtil();
+    ~SerialPortUtil();
     //打开串口
-    int open(char *pcDevName);
+    bool open(char *pcDevName);
     //关闭串口
     void close();
     //设置波特率
     void setSpeed(int speed);
     //设置通讯参数
-    int setParity(int numOfDataBits, int numOfStopBits, int parity);
+    bool setParity(int numOfDataBits, int numOfStopBits, int parity);
     //写串口
     int write(char *pcSendBytes, int nSendLen);
     //读串口
     int read(char *pcReadBytes, int nMaxLen);
+    //判定文件句柄是否有效
+    bool isValued();
 
     //自测函数
     static void mainTest();
@@ -51,11 +55,10 @@ public:
     static const int PARITY_O = 'o';
 
 private:
+    static const char* const TAG;
+
     //串口句柄
     int mfd;
-    int mDataBits;
-    int mStopBits;
-    int mParity;
 };
 
 #endif //NDKFUNC_SERIALPORTUTIL_H
