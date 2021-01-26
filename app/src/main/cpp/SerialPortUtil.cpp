@@ -215,7 +215,7 @@ void SerialPortUtil::mainTest() {
     int nSendBytes;
     char sendBytes[256];
     char readBytes[256];
-    char *pcDeviceName = "/dev/ttyGS0";
+    char *pcDeviceName = "/dev/ttyS0";
     SerialPortUtil serialPortUtil;
 
     LOGI(TAG, "mainTest deviceName=%s", pcDeviceName);
