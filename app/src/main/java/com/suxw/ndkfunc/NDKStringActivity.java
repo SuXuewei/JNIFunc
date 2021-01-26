@@ -10,6 +10,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.suxw.ndkfunc.util.SerialPort;
 import com.suxw.ndkfunc.util.StringUtil;
 
 import androidx.annotation.Nullable;
@@ -26,6 +27,7 @@ public class NDKStringActivity extends AppCompatActivity {
 
     EditText etJavaString;
     TextView tvTestInfo;
+    SerialPort serialPort;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -37,15 +39,15 @@ public class NDKStringActivity extends AppCompatActivity {
         etJavaString = (EditText)findViewById(R.id.etJavaString);
         tvTestInfo = (TextView)findViewById(R.id.tvNdkStringInfo);
 
+        serialPort = new SerialPort();
+
         btnStartTest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 StringUtil stringUtil = new StringUtil();
                 String strInput = etJavaString.getText().toString();
-                //String strOutput = "output STRING";
                 String strOutput = stringUtil.getOutString(strInput);
-                strOutput += "\n" + stringUtil.getStringFromCpp(strInput);
-                stringUtil.testSerialPort();
+                //testSerialPort();
                 String strTestInfo = buildTestInfo(strInput, strOutput);
                 String info = tvTestInfo.getText().toString();
                 info += strTestInfo;
@@ -67,5 +69,17 @@ public class NDKStringActivity extends AppCompatActivity {
         strTestInfo = "Input String：" + strInput + "\n" +
                       "Output String: \n" + strOutput + "\n";
         return strTestInfo;
+    }
+
+    void testSerialPort()
+    {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if(serialPort != null) {
+                    serialPort.testSerialPort();
+                }
+            }
+        }).start();
     }
 }

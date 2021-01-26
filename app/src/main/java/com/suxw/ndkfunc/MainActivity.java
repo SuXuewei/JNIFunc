@@ -34,11 +34,17 @@ public class MainActivity extends AppCompatActivity {
     //元素点击那妞
     boolean processOnItemClick(int position)
     {
+        Intent intent;
         switch (position)
         {
             case 0:
-                Intent intent = new Intent(MainActivity.this,
+                intent = new Intent(MainActivity.this,
                         NDKStringActivity.class);
+                startActivityForResult(intent, 1);
+                break;
+            case 1:
+                intent = new Intent(MainActivity.this,
+                        SerialPortActivity.class);
                 startActivityForResult(intent, 1);
                 break;
             default:

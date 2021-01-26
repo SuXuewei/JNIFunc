@@ -69,7 +69,6 @@ bool SerialPortUtil::open(char *pcDevName) {
     LOGI(TAG, "open mfd=%d", mfd);
     if(-1 == mfd)
     {
-        perror("open serial port fail!");
         return false;
     }
 
@@ -82,7 +81,7 @@ void SerialPortUtil::close() {
     mfd = -1;
 }
 
-//当前实体对象是否有效
+//当前实体对象控制的串口是否有效
 bool SerialPortUtil::isValued() {
     return (mfd == -1) ? false : true;
 }

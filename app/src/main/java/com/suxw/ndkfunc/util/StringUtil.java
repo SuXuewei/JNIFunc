@@ -20,7 +20,4 @@ public class StringUtil {
 
     public native String getOutString(String strInput);
 
-    public native String getStringFromCpp(String strInput);
-
-    public native String testSerialPort();
 }
