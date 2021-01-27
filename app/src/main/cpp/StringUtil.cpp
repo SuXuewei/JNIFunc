@@ -59,20 +59,17 @@ bool StringUtil::convertJStringToBytes(jstring jstr,
     return bRet;
 }
 
-bool StringUtil::convertJStringToGBK(JNIEnv *env, jstring jstr, char *pcStr, int *pnCStrLen)
+//由指定编码以零结束的char转为Java String
+jstring StringUtil::ConvBytesToJstring(const char* pcStr, const char* encoding)
 {
-    return convertJStringToBytes(jstr, ENCODE_GB2312, pcStr, pnCStrLen);
-}
+    jstring jencoding;
+    jbyteArray bytes = (*m_pJNIEnv).NewByteArray(strlen(pcStr));
+    (*m_pJNIEnv).SetByteArrayRegion(bytes, 0, strlen(pcStr), (jbyte*)pcStr);
+    if (encoding == NULL)
+        jencoding= (*m_pJNIEnv).NewStringUTF(ENCODE_UTF8);
+    else
+        jencoding=(*m_pJNIEnv).NewStringUTF(encoding);
 
-jstring StringUtil::strToJstring(JNIEnv* env, const char* pStr)
-{
-    int        strLen    = strlen(pStr);
-    jclass     jstrObj   = (*env).FindClass("java/lang/String");
-    jmethodID  methodId  = (*env).GetMethodID(jstrObj, "", "([BLjava/lang/String;)V");
-    jbyteArray byteArray = (*env).NewByteArray(strLen);
-    jstring    encode    = (*env).NewStringUTF("utf-8");
-
-    (*env).SetByteArrayRegion(byteArray, 0, strLen, (jbyte*)pStr);
-
-    return (jstring)(*env).NewObject(jstrObj, methodId, byteArray, encode);
+    return (jstring)(*m_pJNIEnv).NewObject(m_stringClass, m_midStringInit,
+            bytes, jencoding);
 }

@@ -12,15 +12,15 @@
 class StringUtil {
 
 public:
+    //调用init后，才可使用StringUtil提供的相关功能函数
     static void init(JNIEnv *env);
 
+    //将jstring转换成指定编码的char数组
     static bool convertJStringToBytes(jstring jstr,
             const char* const pcEncode, char *pcStr, int *pnCStrLen);
 
-    static bool convertJStringToGBK(JNIEnv *env, jstring jstr,
-            char *pcStr, int *pnCStrLen);
-
-    static jstring strToJstring(JNIEnv* env, const char* pStr);
+    //使用指定编码的char数组，生成jni的string对象
+    static jstring ConvBytesToJstring(const char* pcStr, const char* encoding);
 
 public:
     static const char* const ENCODE_GB2312;

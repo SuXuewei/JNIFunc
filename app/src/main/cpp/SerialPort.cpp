@@ -29,7 +29,7 @@ extern "C" {
         int nSendLen = (int)((*env).GetStringUTFLength(input));
         char *pcSendData = new char[nSendLen + 1];
         char readData[512];
-        const char *pcDevName = "/dev/ttyGS0";
+        const char *pcDevName = "/dev/ttyS0";
         int nReadLen = 0;
 
         StringUtil::init(env);
@@ -37,7 +37,8 @@ extern "C" {
         //存储输入数据
         nSendLen += 1;
         memset(pcSendData, 0, nSendLen);
-        StringUtil::convertJStringToGBK(env, input, pcSendData, &nSendLen);
+        StringUtil::convertJStringToBytes(input,
+                StringUtil::ENCODE_GB2312, pcSendData, &nSendLen);
 
         //准备串口收发
         SerialPortUtil serialPortUtil;
@@ -63,7 +64,9 @@ extern "C" {
         pcSendData = NULL;
         serialPortUtil.close();
 
-        return (*env).NewStringUTF(readData);
+        //return (*env).NewStringUTF(readData);
+        return StringUtil::ConvBytesToJstring(readData,
+                StringUtil::ENCODE_GB2312);
     }
 
     JNIEXPORT jstring JNICALL Java_com_suxw_ndkfunc_util_SerialPort_getStringFromCpp(
