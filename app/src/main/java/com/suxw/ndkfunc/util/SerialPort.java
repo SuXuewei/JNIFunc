@@ -16,4 +16,6 @@ public class SerialPort {
     public native String getStringFromCpp(String strInput);
 
     public native void testSerialPort();
+
+    public native String translate(String strInput);
 }

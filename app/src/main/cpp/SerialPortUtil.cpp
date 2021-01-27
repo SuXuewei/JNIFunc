@@ -64,7 +64,7 @@ speed_t SerialPortUtil::getBaudrate(int baudrate) {
 }
 
 //打开串口
-bool SerialPortUtil::open(char *pcDevName) {
+bool SerialPortUtil::open(const char *pcDevName) {
     mfd = ::open(pcDevName, O_RDWR);
     LOGI(TAG, "open mfd=%d", mfd);
     if(-1 == mfd)
@@ -110,6 +110,7 @@ void SerialPortUtil::setSpeed(int speed) {
     if(status != 0)
     {
         perror("tcsettattr fail!");
+        LOGI(TAG, "tcsettattr fail!");
         return;
     }
     //清空串口输入输出缓存
@@ -130,7 +131,7 @@ bool SerialPortUtil::setParity(int numOfDataBits, int numOfStopBits, int parity)
 
     if(tcgetattr(mfd, &options) != 0)
     {
-        perror("setParity tcgetattr fail!");
+        LOGI(TAG, "setParity tcgetattr fail!");
         return false;
     }
 
@@ -144,7 +145,7 @@ bool SerialPortUtil::setParity(int numOfDataBits, int numOfStopBits, int parity)
             options.c_cflag |= CS8;
             break;
         default:
-            fprintf(stderr, "Unsupport data bits size\n");
+            LOGI(TAG, "Unsupport data bits size\n");
             return false;
     }
 
@@ -157,7 +158,7 @@ bool SerialPortUtil::setParity(int numOfDataBits, int numOfStopBits, int parity)
             options.c_cflag |= CSTOPB;
             break;
         default:
-            fprintf(stderr, "Unsupport stop bits size\n");
+            LOGI(TAG, "Unsupport stop bits size\n");
             return false;
     }
 
@@ -180,7 +181,7 @@ bool SerialPortUtil::setParity(int numOfDataBits, int numOfStopBits, int parity)
             options.c_cflag &= ~CSTOPB;
             break;
         default:
-            fprintf(stderr, "Unsupport parity!");
+            LOGI(TAG, "Unsupport parity!");
             return false;
     }
 
@@ -193,7 +194,7 @@ bool SerialPortUtil::setParity(int numOfDataBits, int numOfStopBits, int parity)
     options.c_cc[VMIN] = 0;     //update option and do it now
     if(tcsetattr(mfd, TCSANOW, &options) != 0)
     {
-        perror("Setup Serial fail at last!");
+        LOGI(TAG, "Setup Serial fail at last!");
         return false;
     }
 

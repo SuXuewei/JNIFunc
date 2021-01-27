@@ -79,7 +79,10 @@ public class SerialPortActivity extends AppCompatActivity {
             @Override
             public void run() {
                 displayInfo("开始测试串口");
-                serialPort.testSerialPort();
+                String input = etInput.getText().toString();
+                displayInfo("输入数据: " + input);
+                String output = serialPort.translate(input);
+                displayInfo("返回数据: " + output);
                 displayInfo("测试串口结束");
             }
         }).start();

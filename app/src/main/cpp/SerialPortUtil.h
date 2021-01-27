@@ -20,7 +20,7 @@ public:
     SerialPortUtil();
     ~SerialPortUtil();
     //打开串口
-    bool open(char *pcDevName);
+    bool open(const char *pcDevName);
     //关闭串口
     void close();
     //设置波特率
