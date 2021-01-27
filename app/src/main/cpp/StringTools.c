@@ -14,7 +14,7 @@
 
 #include "android/log.h"
 
-#include "StringUtil.h"
+#include "StringTools.h"
 
 //minSDK 28
 //int GBK_to_UTF8(char *pcIn, int nInLen, char *pcOut, int nOutLen)

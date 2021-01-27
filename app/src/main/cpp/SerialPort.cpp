@@ -2,17 +2,18 @@
 // Created by Administrator on 2021/1/20.
 //
 
-#include <stdio.h>      //标准输入输出定义
-#include <stdlib.h>     //标准函数定义
+#include <cstdio>      //标准输入输出定义
+#include <cstdlib>     //标准函数定义
 #include <unistd.h>     //unix标准函数定义
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>      //文件控制定义
 #include <termios.h>    //PPSIX 终端控制定义
 #include <error.h>      //错误号定义
-#include <string.h>
+#include <cstring>
 #include <jni.h>
 #include "SerialPortUtil.h"
+#include "StringUtil.h"
 #include "LogUtil.h"
 
 static const char* const TAG = "SerialPort";
@@ -25,22 +26,25 @@ extern "C" {
     JNIEXPORT jstring JNICALL Java_com_suxw_ndkfunc_util_SerialPort_translate(
             JNIEnv *env, jobject obj, jstring input)
     {
-        const char *pcInputData = (*env).GetStringUTFChars(input, NULL);
         int nSendLen = (int)((*env).GetStringUTFLength(input));
-        char *pcSendData = new char[nSendLen];
+        char *pcSendData = new char[nSendLen + 1];
         char readData[512];
         const char *pcDevName = "/dev/ttyGS0";
         int nReadLen = 0;
 
+        StringUtil::init(env);
         memset(readData, 0, sizeof(readData));
         //存储输入数据
+        nSendLen += 1;
         memset(pcSendData, 0, nSendLen);
-        (*env).ReleaseStringUTFChars(input, pcInputData);
+        StringUtil::convertJStringToGBK(env, input, pcSendData, &nSendLen);
 
         //准备串口收发
         SerialPortUtil serialPortUtil;
         serialPortUtil.open(pcDevName);
         if (!serialPortUtil.isValued()) {
+            delete pcSendData;
+            pcSendData = NULL;
             LOGI(TAG, "fail to open %s", pcDevName);
         }
         serialPortUtil.setSpeed(9600);
@@ -55,6 +59,8 @@ extern "C" {
                 break;
             }
         }
+        delete pcSendData;
+        pcSendData = NULL;
         serialPortUtil.close();
 
         return (*env).NewStringUTF(readData);

@@ -10,7 +10,7 @@ package com.suxw.ndkfunc.util;
 public class StringUtil {
 
     static {
-        System.loadLibrary("StringUtil");
+        System.loadLibrary("StringTools");
         System.loadLibrary("SerialPort");
     }
 
@@ -18,6 +18,6 @@ public class StringUtil {
 
     private static final String TAG = StringUtil.class.getSimpleName();
 
-    public native String getOutString(String strInput);
+    public native  String getOutString(String strInput);
 
 }

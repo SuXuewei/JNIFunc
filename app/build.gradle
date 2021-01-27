@@ -4,17 +4,6 @@ android {
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
 
-    signingConfigs {
-        config {
-            keyAlias 'landi'
-            keyPassword 'landi123456'
-            storeFile file('keystore/LandiApp.keystore')
-            storePassword 'landi123456'
-            v1SigningEnabled true
-            v2SigningEnabled true
-        }
-    }
-
     defaultConfig {
         applicationId "com.suxw.ndkfunc"
         minSdkVersion 22
@@ -29,10 +18,8 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.config
         }
         debug {
-            signingConfig signingConfigs.config
         }
     }
     externalNativeBuild {
