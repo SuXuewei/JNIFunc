@@ -7,6 +7,7 @@ add_library(StringTools
 add_library(SerialPort
         SHARED
         cpp/StringUtil.cpp
+        cpp/SocketUtil.cpp
         cpp/SerialPortUtil.cpp
         cpp/SerialPort.cpp)
 

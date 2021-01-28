@@ -15,6 +15,7 @@
 #include "SerialPortUtil.h"
 #include "StringUtil.h"
 #include "LogUtil.h"
+#include "SocketUtil.h"
 
 static const char* const TAG = "SerialPort";
 
@@ -63,6 +64,9 @@ extern "C" {
         delete pcSendData;
         pcSendData = NULL;
         serialPortUtil.close();
+
+        sleep(1);
+        SocketUtil::testSelf(0, 0);
 
         //return (*env).NewStringUTF(readData);
         return StringUtil::ConvBytesToJstring(readData,
