@@ -20,7 +20,7 @@ public:
     static void log(int nLogLeval, char* pcTitle,  unsigned char *pcData, int nDataLen);
 
 private:
-    static FILE* openLogFile(char* pcFileName, struct tm* t);
+    static FILE* openLogFile(tm* t);
     static void getTagLevel(int nTagLevel, char* tagLevel);
 
 public:

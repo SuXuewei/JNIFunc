@@ -3,18 +3,18 @@
 //
 
 #include <string>
-#include <stdio.h>
+#include <cstdio>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/errno.h>
+#include <cerrno>
 #include "LogUtil.h"
 #include "StringUtil.h"
 
 const char* const LogUtil::TAG = "LogUtil";
 
-FILE* LogUtil::openLogFile(char* pcFileName, struct tm* t)
+FILE* LogUtil::openLogFile(struct tm* t)
 {
     char fileName[64];
     char *pcRootDir = "/sdcard/NDKFuncLog";
@@ -46,6 +46,8 @@ FILE* LogUtil::openLogFile(char* pcFileName, struct tm* t)
              fileName, strerror(errno), errno);
         return NULL;
     }
+    LOGI(TAG, "open file %s fp=%d error %s errno %d",
+         fileName, (int)fp, strerror(errno), errno);
 
     return fp;
 }
@@ -71,14 +73,13 @@ void LogUtil::getTagLevel(int nTagLevel, char *tagLevel) {
 //
 void LogUtil::log(int nLogLeval, char *pcTitle, unsigned char *pcData, int nDataLen)
 {
-    char logFileName[64];
     char tagLevel[8];
     char logInfo[2048];
     FILE *fp;
     time_t lTime;
     struct tm* t;
+    int nSendLen = 0;
 
-    memset(logFileName, 0, sizeof(logFileName));
     memset(tagLevel, 0, sizeof(tagLevel));
     memset(logInfo, 0, sizeof(logInfo));
 
@@ -87,8 +88,7 @@ void LogUtil::log(int nLogLeval, char *pcTitle, unsigned char *pcData, int nData
     t = localtime(&lTime);
 
     //获取日志文件名
-    memset(logFileName, 0, sizeof(logFileName));
-    fp = openLogFile(logFileName, t);
+    fp = openLogFile(t);
     if(fp == NULL) {
         return;
     }
@@ -97,23 +97,33 @@ void LogUtil::log(int nLogLeval, char *pcTitle, unsigned char *pcData, int nData
     memset(logInfo, 0, sizeof(logInfo));
     memset(tagLevel, 0, sizeof(tagLevel));
     getTagLevel(nLogLeval, tagLevel);
-    sprintf(logInfo, "\n[%04d-%02d-%02d %2.2d:%2.2d:%2.2d %s]: %s\n",
-            t->tm_year, t->tm_mon, t->tm_mday,
+    sprintf(logInfo, "[%04d-%02d-%02d %2.2d:%2.2d:%2.2d %s]: %s\r\n",
+            1900 + t->tm_year, 1 + t->tm_mon, t->tm_mday,
             t->tm_hour, t->tm_min, t->tm_sec,
             tagLevel, pcTitle);
-    if(fputs(logInfo, fp) == EOF) {
-        LOGI(TAG, "fail to open file %s error %s errno %d",
-             logFileName, strerror(errno), errno);
+    nSendLen = strlen(logInfo);
+    if(fwrite(logInfo, 1, strlen(logInfo), fp) != nSendLen) {
+        LOGI(TAG, "write data fail by fputs, data:%s nSendLen:%d error:%s errno:%d",
+             logInfo, nSendLen, strerror(errno), errno);
         return;
     }
+    LOGI(TAG, "fputs, data:%s error:%s errno:%d",
+        logInfo, strerror(errno), errno);
 
     //转化数据为二进制字符串并输出到日志中
     memset(logInfo, 0, sizeof(logInfo));
     StringUtil::convertByteToHexString((char *)pcData, nDataLen, logInfo, sizeof(logInfo));
-    strcat(logInfo, "\n");
-    if(fputs(logInfo, fp) == EOF) {
-        LOGI(TAG, "fail to open file %s error %s errno %d",
-             logFileName, strerror(errno), errno);
+    strcat(logInfo, "\r\n");
+    //if(fputs(logInfo, fp) == EOF) {
+    nSendLen = strlen(logInfo);
+    if(fwrite(logInfo, 1, strlen(logInfo), fp) != nSendLen) {
+        LOGI(TAG, "write data fail by fputs, data:%s nSendLen:%d error:%s errno:%d",
+             logInfo, nSendLen, strerror(errno), errno);
         return;
     }
+    LOGI(TAG, "fputs, data:%s error:%s errno:%d",
+         logInfo, strerror(errno), errno);
+
+    fclose(fp);
+    fp = NULL;
 }
