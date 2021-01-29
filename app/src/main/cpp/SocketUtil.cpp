@@ -106,6 +106,8 @@ void SocketUtil::testSelf(int argv, char **argc)
     char recvBuff[1024];
     char* pcSendInfo = "The information from client!";
     SocketUtil socketUtil;
+    int nTryCount = 0;
+    int nRecvLen = 0;
 
     LOGI(TAG, "testSelf");
     memset(recvBuff, 0, sizeof(recvBuff));
@@ -116,9 +118,16 @@ void SocketUtil::testSelf(int argv, char **argc)
     }
     socketUtil.send((unsigned char*)pcSendInfo, strlen(pcSendInfo));
     LOGI(TAG, "send data: %s", pcSendInfo);
-    while(socketUtil.recv(recvBuff, sizeof(recvBuff)) <= 0) {
-        ;
+    nTryCount = 0;
+    while((nRecvLen = socketUtil.recv(recvBuff, sizeof(recvBuff))) <= 0) {
+        sleep(1);
+        if(nTryCount < 15) {
+            continue;
+        }
+        break;
     }
+    LogUtil::log(LogUtil::LOG_LEVAL_INFO, "socket read data",
+            (unsigned char*)recvBuff, nRecvLen);
     LOGI(TAG, "read data: %s", recvBuff);
     socketUtil.close();
 }

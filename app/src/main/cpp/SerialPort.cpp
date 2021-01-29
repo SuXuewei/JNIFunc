@@ -35,11 +35,14 @@ extern "C" {
 
         StringUtil::init(env);
         memset(readData, 0, sizeof(readData));
+
         //存储输入数据
         nSendLen += 1;
         memset(pcSendData, 0, nSendLen);
         StringUtil::convertJStringToBytes(input,
                 StringUtil::ENCODE_GB2312, pcSendData, &nSendLen);
+        LogUtil::log(LogUtil::LOG_LEVAL_INFO, "SerialPort Test",
+                (unsigned char*)pcSendData, nSendLen);
 
         //准备串口收发
         SerialPortUtil serialPortUtil;

@@ -3,6 +3,7 @@
 //
 #include <cstring>
 #include "StringUtil.h"
+#include "LogUtil.h"
 
 const char* const StringUtil::TAG = "StringUtil";
 const char* const StringUtil::ENCODE_GB2312 = "GB2312";
@@ -72,4 +73,20 @@ jstring StringUtil::ConvBytesToJstring(const char* pcStr, const char* encoding)
 
     return (jstring)(*m_pJNIEnv).NewObject(m_stringClass, m_midStringInit,
             bytes, jencoding);
+}
+
+bool StringUtil::convertByteToHexString(const char *pcBytes, int nCount, char *pcHex, int nMaxLen)
+{
+    if((nCount * 2) >= nMaxLen) {
+        LOGI(TAG, "convertByteToHexString data length error! nCount=%d nMaxLen=%d", nCount, nMaxLen);
+        return false;
+    }
+
+    int nConvertedLen = 0;
+    while(nConvertedLen < nCount) {
+        sprintf(pcHex + nConvertedLen * 2, "%02x", pcBytes[nConvertedLen++]);
+    }
+    pcHex[nCount * 2] = 0;
+
+    return true;
 }

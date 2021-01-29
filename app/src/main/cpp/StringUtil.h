@@ -22,6 +22,10 @@ public:
     //使用指定编码的char数组，生成jni的string对象
     static jstring ConvBytesToJstring(const char* pcStr, const char* encoding);
 
+    //
+    static bool convertByteToHexString(const char* pcBytes, int nCount,
+            char* pcHex, int nMaxLen);
+
 public:
     static const char* const ENCODE_GB2312;
     static const char* const ENCODE_UTF8;
