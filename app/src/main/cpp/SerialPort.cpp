@@ -16,6 +16,7 @@
 #include "StringUtil.h"
 #include "LogUtil.h"
 #include "SocketUtil.h"
+#include "Config.h"
 
 static const char* const TAG = "SerialPort";
 
@@ -32,6 +33,7 @@ extern "C" {
         char readData[512];
         const char *pcDevName = "/dev/ttyS0";
         int nReadLen = 0;
+        Config config;
 
         StringUtil::init(env);
         memset(readData, 0, sizeof(readData));
@@ -43,6 +45,7 @@ extern "C" {
                 StringUtil::ENCODE_GB2312, pcSendData, &nSendLen);
         LogUtil::log(LogUtil::LOG_LEVAL_INFO, "SerialPort Test",
                 (unsigned char*)pcSendData, nSendLen);
+        config.parseConfigFile(Config::FILE_PATH);
 
         //准备串口收发
         SerialPortUtil serialPortUtil;
