@@ -31,7 +31,7 @@ extern "C" {
         int nSendLen = (int)((*env).GetStringUTFLength(input));
         char *pcSendData = new char[nSendLen + 1];
         char readData[512];
-        const char *pcDevName = "/dev/ttyS0";
+        const char *pcDevName = "/dev/ttyGS0";
         int nReadLen = 0;
         Config config;
 
@@ -61,9 +61,15 @@ extern "C" {
         serialPortUtil.write(pcSendData, nSendLen);
         while(true)
         {
-            nReadLen = serialPortUtil.read(readData, sizeof(readData));
+            //nReadLen = serialPortUtil.read(readData, 2, 5);
+            nReadLen = serialPortUtil.read(readData, 6);
+            if(nReadLen == SerialPortUtil::EC_ERROR_TIMEOUT) {
+                LOGI(TAG, "time out", NULL, 0);
+            }
             if(nReadLen > 0)
             {
+                LogUtil::logcat(LogUtil::LOG_LEVAL_INFO, "serial read data",
+                        (unsigned char*)readData, nReadLen);
                 break;
             }
         }
@@ -72,7 +78,7 @@ extern "C" {
         serialPortUtil.close();
 
         sleep(1);
-        SocketUtil::testSelf(0, 0);
+        //SocketUtil::testSelf(0, 0);
 
         //return (*env).NewStringUTF(readData);
         return StringUtil::ConvBytesToJstring(readData,

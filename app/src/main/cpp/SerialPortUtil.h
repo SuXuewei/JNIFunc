@@ -9,6 +9,7 @@
 #include <stdlib.h>     //标准函数定义
 #include <unistd.h>     //unix标准函数定义
 #include <sys/types.h>
+#include <sys/time.h>
 #include <sys/stat.h>
 #include <fcntl.h>      //文件控制定义
 #include <termios.h>    //PPSIX 终端控制定义
@@ -30,9 +31,12 @@ public:
     //写串口
     int write(char *pcSendBytes, int nSendLen);
     //读串口
-    int read(char *pcReadBytes, int nMaxLen);
+    int read(char *pcReadBytes, int nNeedReadLen, int nTimeOut = TIME_OUT_DISABLE);
     //判定文件句柄是否有效
     bool isValued();
+
+    int getTimeout() const;
+    void setTimeout(int mTimeout);
 
     //自测函数
     static void mainTest();
@@ -40,6 +44,8 @@ public:
 private:
     //获取波特率
     speed_t getBaudrate(int baudrate);
+    //计算超时时间，以秒为单位
+    int calcTimeOut(struct timeval tvSta);
 
 public:
     //data bits
@@ -54,8 +60,19 @@ public:
     static const int PARITY_S = 's';
     static const int PARITY_O = 'o';
 
+    //error code
+    static const int EC_BASE            = 0;
+    static const int EC_SUCC            = (EC_BASE - 0);
+    static const int EC_ERROR           = (EC_BASE - 1);
+    static const int EC_ERROR_READ      = (EC_BASE - 2);
+    static const int EC_ERROR_WRITE     = (EC_BASE - 3);
+    static const int EC_ERROR_TIMEOUT   = (EC_BASE - 4);
+
 private:
     static const char* const TAG;
+
+    static const int USEC_PER_SECOND = 1000000;   //每秒包含的微秒数
+    static const int TIME_OUT_DISABLE = -1;   //秒
 
     //串口句柄
     int m_fd;

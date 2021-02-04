@@ -26,6 +26,8 @@ SocketUtil::~SocketUtil()
 //create a socket connect to host
 bool SocketUtil::open(const char *pcIP, int port)
 {
+    close();
+
     memset((char *)&m_addr, 0, sizeof(m_addr));
     m_addr.sin_family = AF_INET;
     m_addr.sin_port = htons(port);

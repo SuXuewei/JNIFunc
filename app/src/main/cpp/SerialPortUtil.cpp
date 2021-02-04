@@ -2,10 +2,11 @@
 // Created by Administrator on 2021/1/25.
 //
 
+#include <cstring>
+#include <sys/time.h>
 #include "SerialPortUtil.h"
 #include "LogUtil.h"
 #include "ErrorCode.h"
-#include <string.h>
 
 //const char* 指针本身数值不能变 const SerialPortUtil::TAG指向的字符不可以改变
 const char* const SerialPortUtil::TAG = "SerialPortUtil";
@@ -67,6 +68,7 @@ speed_t SerialPortUtil::getBaudrate(int baudrate) {
 bool SerialPortUtil::open(const char *pcDevName) {
     m_fd = ::open(pcDevName, O_RDWR);
     LOGI(TAG, "open m_fd=%d", m_fd);
+
     if(-1 == m_fd)
     {
         return false;
@@ -201,12 +203,50 @@ bool SerialPortUtil::setParity(int numOfDataBits, int numOfStopBits, int parity)
     return true;
 }
 
-int SerialPortUtil::write(char *pcSendBytes, int nSendLen) {
-    return ::write(m_fd, pcSendBytes, nSendLen);
+//计算超时时间，以秒为单位
+int SerialPortUtil::calcTimeOut(struct timeval tvSta) {
+    struct timeval tvEnd;
+    struct timezone tzEnd;
+    int usec = 0;
+
+    gettimeofday(&tvEnd, &tzEnd);
+    usec = USEC_PER_SECOND * (tvEnd.tv_sec - tvSta.tv_sec) + tvEnd.tv_usec - tvSta.tv_usec;
+    return (usec / USEC_PER_SECOND);
 }
 
-int SerialPortUtil::read(char *pcReadBytes, int nMaxLen) {
-    return ::read(m_fd, pcReadBytes, nMaxLen);
+int SerialPortUtil::read(char *pcReadBytes, int nNeedReadLen, int nTimeOut) {
+    struct timeval tvSta;
+    struct timezone tzSta;
+    int nReadLen = 0;
+    int nReceivedLen = 0;
+
+    gettimeofday(&tvSta, &tzSta);
+    while(true)
+    {
+        //此处从串口处读取指定个数的字节数据,即使接收的数据缓存比这个大
+        //与从文件中读取指定个数的字节数据是一样的,即使文件本身有大量数据
+        nReadLen = ::read(m_fd, pcReadBytes + nReceivedLen, nNeedReadLen - nReceivedLen);
+        nReceivedLen += nReadLen;
+
+        if(nReceivedLen >= nNeedReadLen) {
+            break;
+        }
+        if((nTimeOut != TIME_OUT_DISABLE) && (calcTimeOut(tvSta) > nTimeOut)) {
+            return EC_ERROR_TIMEOUT;
+        }
+    }
+
+    return nReceivedLen;
+}
+
+int SerialPortUtil::write(char *pcSendBytes, int nSendLen) {
+    int nWriteBytes = 0;
+    nWriteBytes = ::write(m_fd, pcSendBytes, nSendLen);
+    if(-1 == nWriteBytes) {
+        tcflush(m_fd, TCIOFLUSH);
+        return EC_ERROR;
+    }
+    return nWriteBytes;
 }
 
 //测试函数
@@ -229,14 +269,17 @@ void SerialPortUtil::mainTest() {
             SerialPortUtil::STOP_BITS_1, SerialPortUtil::PARITY_N);
     strcpy(sendBytes, "JNI send serial data");
     serialPortUtil.write(sendBytes, strlen(sendBytes));
-    while (1)
+    while (true)
     {
-        while((nReadBytes = serialPortUtil.read(readBytes, sizeof(readBytes))) > 0)
+        nReadBytes = serialPortUtil.read(readBytes, 2, 5);
+        if(nReadBytes == EC_ERROR_TIMEOUT) {
+            LOGI(TAG, "time out", NULL, 0);
+        }
+        if(nReadBytes > 0)
         {
             LOGI(TAG, "\nreand len = %d\n", nReadBytes);
             readBytes[nReadBytes] = 0;
             LOGI(TAG, "read buff: %s", readBytes);
-            //if(strcmp(readBytes, "OK") == 0) {
             if(strcmp(readBytes, "\x4f\x4B") == 0) {
                 LOGI(TAG, "call serialPortUtil.close!");
                 serialPortUtil.close();
