@@ -75,18 +75,18 @@ jstring StringUtil::ConvBytesToJstring(const char* pcStr, const char* encoding)
             bytes, jencoding);
 }
 
-bool StringUtil::convertByteToHexString(const char *pcBytes, int nCount, char *pcHex, int nMaxLen)
+bool StringUtil::ConvertGBKToUTF8(const char* pcGBK, char *pcUTF8, int nMaxLen)
 {
-    if((nCount * 2) >= nMaxLen) {
-        LOGI(TAG, "convertByteToHexString data length error! nCount=%d nMaxLen=%d", nCount, nMaxLen);
-        return false;
-    }
+    jstring jstr = StringUtil::ConvBytesToJstring(pcGBK, StringUtil::ENCODE_GB2312);
+    StringUtil::convertJStringToBytes(jstr, StringUtil::ENCODE_UTF8, pcUTF8, &nMaxLen);
+    LOGI(TAG, "ConvertGBKToUTF8 result %s", pcUTF8);
+    return true;
+}
 
-    int nConvertedLen = 0;
-    while(nConvertedLen < nCount) {
-        sprintf(pcHex + nConvertedLen * 2, "%02x", pcBytes[nConvertedLen++]);
-    }
-    pcHex[nCount * 2] = 0;
-
+bool StringUtil::ConvertUTF8ToGBK(const char* pcUTF8, char* pcGBK, int nMaxLen)
+{
+    jstring jstr = StringUtil::ConvBytesToJstring(pcUTF8, StringUtil::ENCODE_UTF8);
+    StringUtil::convertJStringToBytes(jstr, StringUtil::ENCODE_GB2312, pcGBK, &nMaxLen);
+    LOGI(TAG, "ConvertUTF8ToGBK result %s", pcGBK);
     return true;
 }

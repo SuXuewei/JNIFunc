@@ -18,10 +18,12 @@ class LogUtil
 {
 public:
     static void log(int nLogLeval, char* pcTitle,  unsigned char *pcData, int nDataLen);
+    static void logcat(int nLogLeval, char* pcTitle,  const unsigned char *pcData, int nDataLen);
 
 private:
     static FILE* openLogFile(tm* t);
     static void getTagLevel(int nTagLevel, char* tagLevel);
+    static void androidLogcat(int nTagLevel, const char* const tag, char* logInfo);
 
 public:
     static const int LOG_LEVAL_INFO = 0;

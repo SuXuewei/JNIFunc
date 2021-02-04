@@ -11,7 +11,7 @@
 const char* const SerialPortUtil::TAG = "SerialPortUtil";
 
 SerialPortUtil::SerialPortUtil() {
-    mfd = -1;
+    m_fd = -1;
 }
 
 SerialPortUtil::~SerialPortUtil() {
@@ -65,9 +65,9 @@ speed_t SerialPortUtil::getBaudrate(int baudrate) {
 
 //打开串口
 bool SerialPortUtil::open(const char *pcDevName) {
-    mfd = ::open(pcDevName, O_RDWR);
-    LOGI(TAG, "open mfd=%d", mfd);
-    if(-1 == mfd)
+    m_fd = ::open(pcDevName, O_RDWR);
+    LOGI(TAG, "open m_fd=%d", m_fd);
+    if(-1 == m_fd)
     {
         return false;
     }
@@ -77,13 +77,13 @@ bool SerialPortUtil::open(const char *pcDevName) {
 
 //关闭串口
 void SerialPortUtil::close() {
-    ::close(mfd);
-    mfd = -1;
+    ::close(m_fd);
+    m_fd = -1;
 }
 
 //当前实体对象控制的串口是否有效
 bool SerialPortUtil::isValued() {
-    return (mfd == -1) ? false : true;
+    return (m_fd == -1) ? false : true;
 }
 
 /************************************************************************
@@ -98,15 +98,15 @@ void SerialPortUtil::setSpeed(int speed) {
     struct termios opt;
 
     //获取串口设备属性
-    tcgetattr(mfd, &opt);
+    tcgetattr(m_fd, &opt);
     //清空串口输入输出缓存
-    tcflush(mfd, TCIOFLUSH);
+    tcflush(m_fd, TCIOFLUSH);
     //设置串口数据输入的速率
     cfsetispeed(&opt, getBaudrate(speed));
     //设置串口数据输出的速率
     cfsetospeed(&opt, getBaudrate(speed));
     //设置串口属性,之前是修改属性结构体，此处是真正修改串口属性
-    status = tcsetattr(mfd, TCSANOW, &opt);
+    status = tcsetattr(m_fd, TCSANOW, &opt);
     if(status != 0)
     {
         perror("tcsettattr fail!");
@@ -114,7 +114,7 @@ void SerialPortUtil::setSpeed(int speed) {
         return;
     }
     //清空串口输入输出缓存
-    tcflush(mfd, TCIOFLUSH);
+    tcflush(m_fd, TCIOFLUSH);
 }
 
 /************************************************************************
@@ -129,7 +129,7 @@ void SerialPortUtil::setSpeed(int speed) {
 bool SerialPortUtil::setParity(int numOfDataBits, int numOfStopBits, int parity) {
     struct termios options;
 
-    if(tcgetattr(mfd, &options) != 0)
+    if(tcgetattr(m_fd, &options) != 0)
     {
         LOGI(TAG, "setParity tcgetattr fail!");
         return false;
@@ -189,10 +189,10 @@ bool SerialPortUtil::setParity(int numOfDataBits, int numOfStopBits, int parity)
     if(parity != PARITY_N) {
         options.c_iflag |= INPCK;
     }
-    tcflush(mfd, TCIFLUSH);
+    tcflush(m_fd, TCIFLUSH);
     options.c_cc[VTIME] = 150;  //设置超时15秒
     options.c_cc[VMIN] = 0;     //update option and do it now
-    if(tcsetattr(mfd, TCSANOW, &options) != 0)
+    if(tcsetattr(m_fd, TCSANOW, &options) != 0)
     {
         LOGI(TAG, "Setup Serial fail at last!");
         return false;
@@ -202,11 +202,11 @@ bool SerialPortUtil::setParity(int numOfDataBits, int numOfStopBits, int parity)
 }
 
 int SerialPortUtil::write(char *pcSendBytes, int nSendLen) {
-    return ::write(mfd, pcSendBytes, nSendLen);
+    return ::write(m_fd, pcSendBytes, nSendLen);
 }
 
 int SerialPortUtil::read(char *pcReadBytes, int nMaxLen) {
-    return ::read(mfd, pcReadBytes, nMaxLen);
+    return ::read(m_fd, pcReadBytes, nMaxLen);
 }
 
 //测试函数

@@ -58,7 +58,7 @@ private:
     static const char* const TAG;
 
     //串口句柄
-    int mfd;
+    int m_fd;
 };
 
 #endif //NDKFUNC_SERIALPORTUTIL_H

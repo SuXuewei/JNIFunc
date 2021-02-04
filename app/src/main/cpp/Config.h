@@ -18,7 +18,9 @@ public:
 private:
     bool open(const char* pcFileName);
     void close();
-    bool isValid() {return (fp != NULL);}
+    bool isValid() {return (m_fp != NULL);}
+
+    bool getTag(const char* pcLineData, const char* space, char* pcTag, int maxLen);
 
     bool getItem(const char* pcGroupName, const char* pcItemName, char* pcItem, int nMaxSize);
 
@@ -37,7 +39,7 @@ private:
     std::string m_grp2_item3;
 
 private:
-    FILE* fp;
+    FILE* m_fp;
 };
 
 
