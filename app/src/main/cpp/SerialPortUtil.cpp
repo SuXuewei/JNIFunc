@@ -3,9 +3,9 @@
 //
 
 #include <cstring>
-#include <sys/time.h>
 #include "SerialPortUtil.h"
 #include "LogUtil.h"
+#include "TimerUtil.h"
 #include "ErrorCode.h"
 
 //const char* 指针本身数值不能变 const SerialPortUtil::TAG指向的字符不可以改变
@@ -67,25 +67,14 @@ speed_t SerialPortUtil::getBaudrate(int baudrate) {
 //打开串口
 bool SerialPortUtil::open(const char *pcDevName) {
     m_fd = ::open(pcDevName, O_RDWR);
-    LOGI(TAG, "open m_fd=%d", m_fd);
-
-    if(-1 == m_fd)
-    {
-        return false;
-    }
-
-    return true;
+    LOGI(TAG, "open file=%s, m_fd=%d", pcDevName, m_fd);
+    return (-1 != m_fd);
 }
 
 //关闭串口
 void SerialPortUtil::close() {
     ::close(m_fd);
     m_fd = -1;
-}
-
-//当前实体对象控制的串口是否有效
-bool SerialPortUtil::isValued() {
-    return (m_fd == -1) ? false : true;
 }
 
 /************************************************************************
@@ -203,24 +192,12 @@ bool SerialPortUtil::setParity(int numOfDataBits, int numOfStopBits, int parity)
     return true;
 }
 
-//计算超时时间，以秒为单位
-int SerialPortUtil::calcTimeOut(struct timeval tvSta) {
-    struct timeval tvEnd;
-    struct timezone tzEnd;
-    int usec = 0;
-
-    gettimeofday(&tvEnd, &tzEnd);
-    usec = USEC_PER_SECOND * (tvEnd.tv_sec - tvSta.tv_sec) + tvEnd.tv_usec - tvSta.tv_usec;
-    return (usec / USEC_PER_SECOND);
-}
-
 int SerialPortUtil::read(char *pcReadBytes, int nNeedReadLen, int nTimeOut) {
-    struct timeval tvSta;
-    struct timezone tzSta;
     int nReadLen = 0;
     int nReceivedLen = 0;
 
-    gettimeofday(&tvSta, &tzSta);
+    TimerUtil timerUtil;
+    timerUtil.startTimer();
     while(true)
     {
         //此处从串口处读取指定个数的字节数据,即使接收的数据缓存比这个大
@@ -231,8 +208,8 @@ int SerialPortUtil::read(char *pcReadBytes, int nNeedReadLen, int nTimeOut) {
         if(nReceivedLen >= nNeedReadLen) {
             break;
         }
-        if((nTimeOut != TIME_OUT_DISABLE) && (calcTimeOut(tvSta) > nTimeOut)) {
-            return EC_ERROR_TIMEOUT;
+        if((nTimeOut != TIME_OUT_DISABLE) && (timerUtil.getTimeOut() > nTimeOut)) {
+            return EC_TIMEOUT;
         }
     }
 
@@ -272,7 +249,7 @@ void SerialPortUtil::mainTest() {
     while (true)
     {
         nReadBytes = serialPortUtil.read(readBytes, 2, 5);
-        if(nReadBytes == EC_ERROR_TIMEOUT) {
+        if(nReadBytes == EC_TIMEOUT) {
             LOGI(TAG, "time out", NULL, 0);
         }
         if(nReadBytes > 0)

@@ -17,6 +17,7 @@
 #include "LogUtil.h"
 #include "SocketUtil.h"
 #include "Config.h"
+#include "ErrorCode.h"
 
 static const char* const TAG = "SerialPort";
 
@@ -31,12 +32,15 @@ extern "C" {
         int nSendLen = (int)((*env).GetStringUTFLength(input));
         char *pcSendData = new char[nSendLen + 1];
         char readData[512];
-        const char *pcDevName = "/dev/ttyGS0";
+        const char *pcDevName = "/dev/ttyS0";
         int nReadLen = 0;
         Config config;
 
         StringUtil::init(env);
         memset(readData, 0, sizeof(readData));
+
+        //测试socket通讯
+        SocketUtil::testSelf(0, 0);
 
         //存储输入数据
         nSendLen += 1;
@@ -51,8 +55,8 @@ extern "C" {
         SerialPortUtil serialPortUtil;
         serialPortUtil.open(pcDevName);
         if (!serialPortUtil.isValued()) {
-            delete pcSendData;
-            pcSendData = NULL;
+            delete[] pcSendData;
+            pcSendData = nullptr;
             LOGI(TAG, "fail to open %s", pcDevName);
         }
         serialPortUtil.setSpeed(9600);
@@ -61,9 +65,9 @@ extern "C" {
         serialPortUtil.write(pcSendData, nSendLen);
         while(true)
         {
-            //nReadLen = serialPortUtil.read(readData, 2, 5);
-            nReadLen = serialPortUtil.read(readData, 6);
-            if(nReadLen == SerialPortUtil::EC_ERROR_TIMEOUT) {
+            nReadLen = serialPortUtil.read(readData, 2, 5);
+//            nReadLen = serialPortUtil.read(readData, 6);
+            if(nReadLen == EC_TIMEOUT) {
                 LOGI(TAG, "time out", NULL, 0);
             }
             if(nReadLen > 0)
@@ -73,12 +77,9 @@ extern "C" {
                 break;
             }
         }
-        delete pcSendData;
-        pcSendData = NULL;
+        delete[] pcSendData;
+        pcSendData = nullptr;
         serialPortUtil.close();
-
-        sleep(1);
-        //SocketUtil::testSelf(0, 0);
 
         //return (*env).NewStringUTF(readData);
         return StringUtil::ConvBytesToJstring(readData,
