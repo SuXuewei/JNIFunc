@@ -81,7 +81,7 @@ extern "C" {
         pcSendData = nullptr;
         serialPortUtil.close();
 
-        //return (*env).NewStringUTF(readData);
+        //根据gb2312编码的字符数据生成jstring对象返回给接口调用者
         return StringUtil::ConvBytesToJstring(readData,
                 StringUtil::ENCODE_GB2312);
     }

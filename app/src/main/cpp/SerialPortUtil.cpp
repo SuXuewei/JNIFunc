@@ -77,6 +77,10 @@ void SerialPortUtil::close() {
     m_fd = -1;
 }
 
+inline bool SerialPortUtil::isValued() const {
+    return -1 != m_fd;
+}
+
 /************************************************************************
  * void setSpeed(int fd, int speed)
  * 功能: 设置串口波特率

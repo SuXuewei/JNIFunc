@@ -33,7 +33,7 @@ public:
     //读串口
     int read(char *pcReadBytes, int nNeedReadLen, int nTimeOut = TIME_OUT_DISABLE);
     //判定文件句柄是否有效
-    inline bool isValued() {return -1 != m_fd;}
+    inline bool isValued() const;
 
     //自测函数
     static void mainTest();

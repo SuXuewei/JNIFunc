@@ -25,6 +25,10 @@ SocketUtil::~SocketUtil()
     close();
 }
 
+inline bool SocketUtil::isValid() const {
+    return m_socket > 0;
+}
+
 //create a socket connect to host
 bool SocketUtil::open(const char *pcIP, int port)
 {
@@ -142,11 +146,15 @@ int SocketUtil::checkStatus(int timeOut) {
     //添加文件句柄，设置标志位
     FD_SET(m_socket, &fds);
     //设置超时时间
-    tvWaitTime.tv_sec = (timeOut==TIME_OUT_DISABLE) ? 0 : timeOut;
+    tvWaitTime.tv_sec = timeOut;
     tvWaitTime.tv_usec = 0;
 
     //开始监测socket读取状态
-    iRet = select(m_socket + 1, &fds, NULL, NULL, &tvWaitTime);
+    if (timeOut == TIME_OUT_DISABLE) {
+        iRet = select(m_socket + 1, &fds, NULL, NULL, NULL);
+    } else {
+        iRet = select(m_socket + 1, &fds, NULL, NULL, &tvWaitTime);
+    }
     if(iRet == -1) {
         return EC_EXCEPTION;
     }

@@ -15,7 +15,7 @@ public:
     SocketUtil();
     ~SocketUtil();
     //is the socket object valid
-    inline bool isValid() {return m_socket > 0;}
+    inline bool isValid() const;
     //open a socket connect to host
     bool open(const char* pcIP, int port);
     //send data
