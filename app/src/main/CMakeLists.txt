@@ -6,6 +6,8 @@ add_library(StringTools
 
 add_library(SerialPort
         SHARED
+        cpp/Viewer.cpp
+        cpp/Controller.cpp
         cpp/BytesUtil.cpp
         cpp/TimerUtil.cpp
         cpp/Config.cpp

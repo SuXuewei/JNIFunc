@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -25,6 +26,10 @@ public class SerialPortActivity extends AppCompatActivity {
     static final int MSG_CALL_MIS = 2;
     static final String MSG_KEY_INFO ="info";
 
+    static {
+        System.loadLibrary("SerialPort");
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,6 +40,7 @@ public class SerialPortActivity extends AppCompatActivity {
         etInput = (EditText)findViewById(R.id.etInput);
         etOutput = (EditText)findViewById(R.id.etOutput);
         tvTipInfo = (TextView)findViewById(R.id.tvSerialPortInfo);
+        tvTipInfo.setMovementMethod(ScrollingMovementMethod.getInstance());
         serialPort = new SerialPort();
         handler = new Handler() {
             @Override
@@ -73,6 +79,9 @@ public class SerialPortActivity extends AppCompatActivity {
         });
     }
 
+    public native String translate(String strInput);
+    public native String doSomething(String strInput);
+
     void testSerialPort()
     {
         new Thread(new Runnable() {
@@ -81,7 +90,7 @@ public class SerialPortActivity extends AppCompatActivity {
                 displayInfo("开始测试串口");
                 String input = etInput.getText().toString();
                 displayInfo("输入数据: " + input);
-                String output = serialPort.translate(input);
+                String output = translate(input);
                 displayInfo("返回数据: " + output);
                 displayInfo("测试串口结束");
             }

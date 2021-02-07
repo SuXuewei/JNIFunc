@@ -18,6 +18,7 @@
 #include "SocketUtil.h"
 #include "Config.h"
 #include "ErrorCode.h"
+#include "Viewer.h"
 
 static const char* const TAG = "SerialPort";
 
@@ -26,7 +27,8 @@ int setParity(int fd, int numOfDataBits, int numOfStopBits, int parity);
 int openSerialPort(char *pcDevName);
 
 extern "C" {
-    JNIEXPORT jstring JNICALL Java_com_suxw_ndkfunc_util_SerialPort_translate(
+//    JNIEXPORT jstring JNICALL Java_com_suxw_ndkfunc_util_SerialPort_translate(
+    JNIEXPORT jstring JNICALL Java_com_suxw_ndkfunc_SerialPortActivity_translate(
             JNIEnv *env, jobject obj, jstring input)
     {
         int nSendLen = (int)((*env).GetStringUTFLength(input));
@@ -35,28 +37,41 @@ extern "C" {
         const char *pcDevName = "/dev/ttyS0";
         int nReadLen = 0;
         Config config;
+        jstring jstrInfo;
+        Viewer::init(env, obj, "displayInfo", "(Ljava/lang/String;)V");
 
         StringUtil::init(env);
         memset(readData, 0, sizeof(readData));
+        jclass clazz = (*env).GetObjectClass(obj);
+        Viewer::display("JNI status update!");
 
         //测试socket通讯
+        Viewer::display("JNI test socket start!");
         SocketUtil::testSelf(0, 0);
+        Viewer::display("JNI test socket end!");
 
         //存储输入数据
+        Viewer::display("JNI test jstring translation start!");
         nSendLen += 1;
         memset(pcSendData, 0, nSendLen);
         StringUtil::convertJStringToBytes(input,
                 StringUtil::ENCODE_GB2312, pcSendData, &nSendLen);
         LogUtil::log(LogUtil::LOG_LEVAL_INFO, "SerialPort Test",
                 (unsigned char*)pcSendData, nSendLen);
+        Viewer::display("JNI get input data:", (const unsigned char*)pcSendData, nSendLen);
+        Viewer::display("JNI test jstring translation end!");
+        Viewer::display("JNI test read config file start!");
         config.parseConfigFile(Config::FILE_PATH);
+        Viewer::display("JNI test read config file end!");
 
         //准备串口收发
+        Viewer::display("JNI test serial port start!");
         SerialPortUtil serialPortUtil;
         serialPortUtil.open(pcDevName);
         if (!serialPortUtil.isValued()) {
             delete[] pcSendData;
             pcSendData = nullptr;
+            Viewer::display("JNI test serial port: open fail!");
             LOGI(TAG, "fail to open %s", pcDevName);
         }
         serialPortUtil.setSpeed(9600);
@@ -69,17 +84,20 @@ extern "C" {
 //            nReadLen = serialPortUtil.read(readData, 6);
             if(nReadLen == EC_TIMEOUT) {
                 LOGI(TAG, "time out", NULL, 0);
+                Viewer::display("JNI test serial port: read timeout!");
             }
             if(nReadLen > 0)
             {
                 LogUtil::logcat(LogUtil::LOG_LEVAL_INFO, "serial read data",
                         (unsigned char*)readData, nReadLen);
+                Viewer::display("JNI test serial port: read data succ!");
                 break;
             }
         }
         delete[] pcSendData;
         pcSendData = nullptr;
         serialPortUtil.close();
+        Viewer::display("JNI test serial port end!");
 
         //根据gb2312编码的字符数据生成jstring对象返回给接口调用者
         return StringUtil::ConvBytesToJstring(readData,
@@ -98,3 +116,4 @@ extern "C" {
         SerialPortUtil::mainTest();
     }
 };
+

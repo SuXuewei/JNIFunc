@@ -13,7 +13,7 @@ const char* const Config::TAG = "Config";
 const char* const Config::FILE_PATH = "/sdcard/NDKFuncLog/ndk_func.cfg";
 
 Config::Config() {
-    m_fp = NULL;
+    m_fp = nullptr;
 }
 
 Config::~Config() {
@@ -99,7 +99,7 @@ bool Config::getItem(const char *pcGroupName, const char *pcItemName,
     bFindTag = false;
     //找到ITEM位置
     memset(line, 0, sizeof(line));
-    while(fgets(line, sizeof(line), m_fp) != NULL)
+    while(fgets(line, sizeof(line), m_fp) != nullptr)
     {
         BytesUtil::removeLastStr(line, "\x0d\x0a");
         LOGI(TAG, "getItem group len=%d, data=%s", strlen(line), line);
@@ -119,11 +119,8 @@ bool Config::getItem(const char *pcGroupName, const char *pcItemName,
         }
         LOGI(TAG, "getItem %s != %s", pcItemName, line);
     }
-    if (!bFindTag) {
-        return false;
-    }
 
-    return true;
+    return bFindTag;
 }
 
 bool Config::parseConfigFile(const char *pcConfigFilePath)

@@ -8,7 +8,8 @@
 #include <jni.h>
 
 extern "C" {
-    JNIEXPORT jstring JNICALL Java_com_suxw_ndkfunc_util_SerialPort_translate(
+//    JNIEXPORT jstring JNICALL Java_com_suxw_ndkfunc_util_SerialPort_translate(
+    JNIEXPORT jstring JNICALL Java_com_suxw_ndkfunc_util_SerialPortActivity_translate(
             JNIEnv *env, jobject obj, jstring input);
 
     JNIEXPORT jstring JNICALL Java_com_suxw_ndkfunc_util_SerialPort_getStringFromCpp(

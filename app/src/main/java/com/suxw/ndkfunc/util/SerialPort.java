@@ -17,5 +17,4 @@ public class SerialPort {
 
     public native void testSerialPort();
 
-    public native String translate(String strInput);
 }

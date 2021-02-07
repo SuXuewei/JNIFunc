@@ -11,6 +11,7 @@
 #include "LogUtil.h"
 #include "TimerUtil.h"
 #include "ErrorCode.h"
+#include "Viewer.h"
 
 const char* const SocketUtil::TAG = "SocketUtil";
 
@@ -178,8 +179,10 @@ void SocketUtil::testSelf(int argv, char **argc)
     socketUtil.open("10.73.4.56", 1988);
     if (!socketUtil.isValid()) {
         LOGI(TAG, "testSelf socket invalid!");
+        Viewer::display("socket open fail!");
         return;
     }
+    Viewer::display("socket start send data!");
     socketUtil.send((unsigned char*)pcSendInfo, strlen(pcSendInfo));
     LOGI(TAG, "send data: %s", pcSendInfo);
     nTryCount = 0;
